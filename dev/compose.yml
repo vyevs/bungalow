@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:17.5
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:9.6
+    environment:
+      PGADMIN_DEFAULT_EMAIL: bungalow@email.com
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT: "False"
+    ports: 
+      - "5050:80"
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+       - ./prometheus.yml:/etc/prometheus/prometheus.yml # This sets up the config.
+       - ./data/prometheus:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+
+networks:
+  default:
+    name: bungalow

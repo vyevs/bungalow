@@ -1,0 +1,50 @@
+version: 3
+
+includes:
+  dev:
+    taskfile: ./dev/Taskfile.dist.yml
+    dir: ./dev
+
+tasks:
+  default:
+    desc: Lists all available tasks.
+    cmd: task --list-all --sort none
+
+  build:
+    desc: Builds the program executable.
+    description: |
+      The executable is only built if it does not already exist or one of the
+      Go source files has changed. This prevents unnecessary rebuilds.
+    sources:
+      - go.*
+      - ./**/*.go
+    generates:
+      - bungalow
+    cmd: go build -o bungalow
+  
+  run:
+    desc: Runs the program.
+    description: |
+      Builds the executable before running it.
+      Build only occurs if source files have changed.
+    deps:
+      - build
+    cmd: ./bungalow
+
+  hey:
+    desc: Uses hey to make a bunch of HTTP requests to bungalow.
+    precondition: command -v hey
+    cmd: hey -z 30m -c 5 -m GET http://localhost:8080/health
+
+  docker-build:
+    desc: Builds a docker image using the Dockerfile.
+    cmd: docker build -t bungalow .
+
+  docker-run:
+    desc: Runs the program in a docker container.
+    deps:
+      - docker-build
+    cmds:
+      - defer: docker container rm bungalow 
+      - docker run --name bungalow --publish 8080:8080 --network bungalow bungalow
+    interactive: true

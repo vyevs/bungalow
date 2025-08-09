@@ -1,0 +1,11 @@
+.task
+
+# non-dist taskfiles are ignored so individuals can have their own.
+**/Taskfile.yml
+
+# postgres and prometheus data is ignored so individuals can do their own thing locally
+dev/data/postgres
+dev/data/prometheus
+
+# The program executable.
+bungalow

@@ -1,0 +1,28 @@
+version: 3
+
+tasks:
+  up:
+    desc: Brings up the infrastructure using docker compose.
+    description: |
+      Removes all containers after stoppage.
+      Runs attached to the terminal, feel free to modify this to be detached using -d.
+    cmds:
+      - defer: { task: down }
+      - docker compose up --remove-orphans
+      
+  down:
+    desc: Brings down the infrastructure.
+    cmd: docker compose down --remove-orphans
+
+  psql:
+    desc: Runs a psql container connected to the docker postgres instance.
+    cmd: docker run -it --rm --network bungalow postgres psql -h postgres -U postgres -p 5432
+    interactive: true
+
+  create-postgres-schemas:
+    desc: Creates all postgres schemas. You should only run this on initial setup.
+    cmds:
+      # --network bungalow connects the container to the same docker network as our postgres instance.
+      # --env PGPASSWORD allows psql to run without a password prompt.
+      - docker run -i --rm --network bungalow --env PGPASSWORD=password 
+        postgres psql -h postgres -U postgres -p 5432 < schema.sql
