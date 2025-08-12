@@ -8,7 +8,7 @@ dev/data/postgres
 dev/data/prometheus
 
 # The program executable.
-bungalow
+./bungalow
 
 # Executable.
 tools/create_people

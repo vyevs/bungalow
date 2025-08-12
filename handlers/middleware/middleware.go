@@ -24,6 +24,11 @@ func (mws Middlewares) Wrap(toWrap http.Handler) http.Handler {
 	return toWrap
 }
 
+func (mws Middlewares) WrapFunc(toWrap http.HandlerFunc) http.Handler {
+	handler := http.HandlerFunc(toWrap)
+	return mws.Wrap(handler)
+}
+
 // LogRequest logs incoming requests, body included.
 func LogRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -73,6 +78,13 @@ func Recover(next http.Handler) http.Handler {
 			rw.WriteHeader(http.StatusInternalServerError)
 			slog.ErrorContext(req.Context(), "handler panicked", slog.Any("reason", reason))
 		}
+	})
+}
+
+func ContentTypeJSON(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(rw, req)
 	})
 }
 

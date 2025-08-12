@@ -14,10 +14,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/vyevs/bungalow/clients/postgres"
 	"github.com/vyevs/bungalow/handlers"
 	"github.com/vyevs/bungalow/handlers/middleware"
-	"github.com/vyevs/bungalow/postgres"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -55,15 +56,23 @@ func mainWithCtx(ctx context.Context, cancel context.CancelFunc) error {
 	mws := middleware.Middlewares{
 		middleware.Recover,
 		middleware.Metrics,
+		middleware.ContentTypeJSON,
 		middleware.LogRequest,
 	}
 
-	http.Handle("/metrics", mws.Wrap(promhttp.Handler()))
+	http.Handle("GET /metrics", mws.Wrap(promhttp.Handler()))
 
 	healthHandler := handlers.Health{
 		Postgres: pgCli,
 	}
-	http.Handle("/health", mws.Wrap(healthHandler))
+	http.Handle("GET /health", mws.Wrap(healthHandler))
+
+	peopleHandler := handlers.PeopleHandler{
+		Cli: pgCli,
+	}
+
+	http.Handle("POST /people", mws.WrapFunc(peopleHandler.CreatePerson))
+	http.Handle("GET /people/{id}", mws.WrapFunc(peopleHandler.GetPerson))
 
 	server := http.Server{
 		Addr:    ":8080",

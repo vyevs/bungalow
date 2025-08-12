@@ -12,7 +12,7 @@ type Pinger interface {
 }
 
 type Health struct {
-	Postgres Pinger // postgres
+	Postgres Pinger
 }
 
 type response struct {
@@ -21,8 +21,6 @@ type response struct {
 }
 
 func (h Health) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	time.Sleep(50 * time.Millisecond)
-
 	ctx, cancel := context.WithTimeout(req.Context(), 5*time.Second)
 	defer cancel()
 
